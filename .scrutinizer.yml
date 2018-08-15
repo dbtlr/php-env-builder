@@ -33,4 +33,4 @@ tools:
     excluded_dirs: [vendor, tests]
   php_cpd:
     enabled: true
-excluded_dirs: [vendor, tests]
+    excluded_dirs: [vendor, tests]
