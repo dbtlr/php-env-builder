@@ -10,12 +10,13 @@ use org\bovigo\vfs\vfsStreamFile;
 class TestEnvLoader extends TestBase
 {
     /** @var vfsStreamDirectory */
-    private $root;
+    protected $root;
 
     /** @var vfsStreamFile */
-    private $envFile;
+    protected $envFile;
 
-    protected function internalSetup() {
+    protected function internalSetup()
+    {
         $env = <<< ENV
 VAR1=value1
 VAR2=value2
