@@ -4,7 +4,9 @@ namespace Dbtlr\PHPEnvBuilder\Tests;
 
 use Dbtlr\PHPEnvBuilder\Builder;
 use Dbtlr\PHPEnvBuilder\EnvLoader;
+use Dbtlr\PHPEnvBuilder\EnvWriter;
 use Dbtlr\PHPEnvBuilder\Exception\ConfigurationException;
+use Dbtlr\PHPEnvBuilder\Exception\WritableException;
 use Dbtlr\PHPEnvBuilder\IO;
 use Dbtlr\PHPEnvBuilder\IOHandler\IOHandlerInterface;
 use Mockery\MockInterface;
@@ -17,6 +19,9 @@ class TestBuilder extends TestBase
     /** @var EnvLoader|MockInterface */
     protected $loader;
 
+    /** @var EnvWriter|MockInterface */
+    protected $writer;
+
     /** @var Builder */
     protected $builder;
 
@@ -25,10 +30,12 @@ class TestBuilder extends TestBase
         $this->loader = \Mockery::mock(EnvLoader::class);
         $this->io = \Mockery::mock(IO::class);
         $this->handler = \Mockery::mock(IOHandlerInterface::class);
+        $this->writer = \Mockery::mock(EnvWriter::class);
 
         $this->builder = new Builder('/filename');
         $this->builder->setEnvLoader($this->loader);
         $this->builder->setIO($this->io);
+        $this->builder->setEnvWriter($this->writer);
     }
 
 
@@ -122,5 +129,48 @@ class TestBuilder extends TestBase
 
         $answers = $this->builder->run();
         $this->assertSame(['name' => 'bill', 'age' => '17'], $answers);
+    }
+
+    /** @test */
+    public function write_will_send_answers_to_writer()
+    {
+        $this->loader->expects()->parse();
+
+        $this->io->expects()->ask('name', 'What is your name?', '', false)->once()->andReturns('bill');
+        $this->io->expects()->ask('age', 'How old are you?', '', false)->once()->andReturns('17');
+
+        $this->builder->ask('name', 'What is your name?');
+        $this->builder->ask('age', 'How old are you?');
+
+        $this->builder->run();
+
+        $this->writer->expects()->save(['name' => 'bill', 'age' => '17'])->once();
+        $this->io->expects()->out('Answers saved to /filename')->once();
+
+        $result = $this->builder->write();
+
+        $this->assertTrue($result);
+    }
+
+    /** @test */
+    public function write_will_fail_if_writer_explodes()
+    {
+        $this->loader->expects()->parse();
+
+        $this->io->expects()->ask('name', 'What is your name?', '', false)->once()->andReturns('bill');
+        $this->io->expects()->ask('age', 'How old are you?', '', false)->once()->andReturns('17');
+
+        $this->builder->ask('name', 'What is your name?');
+        $this->builder->ask('age', 'How old are you?');
+
+        $this->builder->run();
+
+        $exception = new WritableException('exception message');
+        $this->writer->expects()->save(['name' => 'bill', 'age' => '17'])->once()->andThrowExceptions([$exception]);
+        $this->io->expects()->out($exception->getMessage())->once();
+
+        $result = $this->builder->write();
+
+        $this->assertFalse($result);
     }
 }

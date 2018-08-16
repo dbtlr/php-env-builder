@@ -3,6 +3,7 @@
 namespace Dbtlr\PHPEnvBuilder;
 
 use Dbtlr\PHPEnvBuilder\Exception\ConfigurationException;
+use Dbtlr\PHPEnvBuilder\Exception\WritableException;
 use Dbtlr\PHPEnvBuilder\IOHandler\CLImateHandler;
 use Dbtlr\PHPEnvBuilder\IOHandler\IOHandlerInterface;
 use League\CLImate\CLImate;
@@ -21,8 +22,14 @@ class Builder
     /** @var EnvLoader */
     protected $envLoader;
 
+    /** @var EnvWriter */
+    protected $envWriter;
+
     /** @var IO */
     protected $io;
+
+    /** @var array */
+    protected $answers = [];
 
 
     /**
@@ -47,6 +54,7 @@ class Builder
 
         $this->setConfig($config);
         $this->setEnvLoader(new EnvLoader($envFile));
+        $this->setEnvWriter(new EnvWriter(dirname($envFile)), basename($envFile));
         $this->setIO(new IO(new CLImateHandler(new CLImate())));
     }
 
@@ -116,6 +124,16 @@ class Builder
     }
 
     /**
+     * Override the EnvWriter.
+     *
+     * @param EnvWriter $envWriter
+     */
+    public function setEnvWriter(EnvWriter $envWriter)
+    {
+        $this->envWriter = $envWriter;
+    }
+
+    /**
      * Run the builder
      *
      * @throws \Exception
@@ -128,16 +146,33 @@ class Builder
             $current = $this->envLoader->parse();
         }
 
-        $answers = [];
         foreach ($this->questions as $name => $question) {
             // If We got an answer out of the loaded env, then let's use it.
             $default = isset($current[$name]) ? $current[$name] : $question['default'];
 
             // Ask the question.
-            $answers[$name] = $this->io->ask($name, $question['prompt'], $default, $question['required']);
+            $this->answers[$name] = $this->io->ask($name, $question['prompt'], $default, $question['required']);
         }
 
-        return $answers;
+        return $this->answers;
+    }
+
+    /**
+     * Write the answers to a file.
+     *
+     * @return bool The status of the write operation.
+     */
+    public function write()
+    {
+        try {
+            $this->envWriter->save($this->answers);
+            $this->io->out(sprintf('Answers saved to %s', $this->envFile));
+            return true;
+
+        } catch (WritableException $e) {
+            $this->io->out($e->getMessage());
+            return false;
+        }
     }
 
     /**
