@@ -25,10 +25,11 @@ $ composer require dbtlr/php-env-builder
 require_once __DIR__ . "/vendor/autoload.php";
 
 $config = [
-    'env' => '...path to env file...',
+    'verbose' => true,
+    'loadEnv' => true,
 ];
 
-$builder = new \Dbtlr\PHPEnvBuilder\EnvBuilder($config);
+$builder = new \Dbtlr\PHPEnvBuilder\Builder('/path/to/.env', $config);
 
 $builder->ask(
     'name',              // ENV variable name
@@ -37,5 +38,6 @@ $builder->ask(
     true                 // Is required?
 );
 
+$builder->run(); // Run the builder and return the answers.
 $builder->write(); // Write the answers to the file.
 ```
