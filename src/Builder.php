@@ -54,7 +54,7 @@ class Builder
 
         $this->setConfig($config);
         $this->setEnvLoader(new EnvLoader($envFile));
-        $this->setEnvWriter(new EnvWriter(dirname($envFile)), basename($envFile));
+        $this->setEnvWriter(new EnvWriter(dirname($envFile), basename($envFile)));
         $this->setIO(new IO(new CLImateHandler(new CLImate())));
     }
 
