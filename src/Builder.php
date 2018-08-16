@@ -136,7 +136,6 @@ class Builder
     /**
      * Run the builder
      *
-     * @throws \Exception
      * @return array
      */
     public function run()
