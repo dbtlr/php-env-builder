@@ -1,6 +1,6 @@
 <?php
 
-namespace Dbtlr\PHPEnvBuilder;
+namespace Dbtlr\PHPEnvBuilder\Exception;
 
 class ConfigurationException extends \Exception
 {

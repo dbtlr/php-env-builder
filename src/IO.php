@@ -16,6 +16,16 @@ class IO
      */
     public function __construct(IOHandlerInterface $handler)
     {
+        $this->setHandler($handler);
+    }
+
+    /**
+     * Override the IO Handler.
+     *
+     * @param IOHandlerInterface $handler
+     */
+    public function setHandler(IOHandlerInterface $handler)
+    {
         $this->handler = $handler;
     }
 
