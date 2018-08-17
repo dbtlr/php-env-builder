@@ -188,13 +188,24 @@ class ComposerScriptRunner
      */
     public function run()
     {
-        $fullPath = $this->getEnvFile();
-        if (!$this->get('clobber') && file_exists($fullPath)) {
-            $this->event->getIO()->write(sprintf('Env file `%s` already exists, skipping...', $fullPath));
+        if ($this->shouldCancelOnClobber()) {
             return;
         }
 
-        foreach ($this->get('questions') as $question) {
+        $this->askQuestions($this->get('questions'));
+
+        $this->builder->run();
+        $this->builder->write();
+    }
+
+    /**
+     * Run through each of the questions and ask each one.
+     *
+     * @param array $questons
+     */
+    protected function askQuestions(array $questons)
+    {
+        foreach ($questons as $question) {
             $this->verifyQuestion($question);
 
             $name = $question['name'];
@@ -204,9 +215,6 @@ class ComposerScriptRunner
 
             $this->builder->ask($name, $prompt, $default, $required);
         }
-
-        $this->builder->run();
-        $this->builder->write();
     }
 
     /**
@@ -228,5 +236,21 @@ class ComposerScriptRunner
                 'The extra.php-env-builder.questions require all questions have a `prompt` property.'
             );
         }
+    }
+
+    /**
+     * If we're clobbering and we're not supposed to, should we cancel?
+     *
+     * @return bool
+     */
+    protected function shouldCancelOnClobber()
+    {
+        $fullPath = $this->getEnvFile();
+        if (!$this->get('clobber') && file_exists($fullPath)) {
+            $this->event->getIO()->write(sprintf('Env file `%s` already exists, skipping...', $fullPath));
+            return true;
+        }
+
+        return false;
     }
 }
