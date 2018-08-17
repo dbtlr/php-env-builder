@@ -2,6 +2,7 @@
 
 namespace Dbtlr\PHPEnvBuilder;
 
+use Dbtlr\PHPEnvBuilder\Exception\AskException;
 use Dbtlr\PHPEnvBuilder\Exception\ConfigurationException;
 use Dbtlr\PHPEnvBuilder\Exception\WritableException;
 use Dbtlr\PHPEnvBuilder\IOHandler\CLImateHandler;
@@ -136,6 +137,7 @@ class Builder
     /**
      * Run the builder
      *
+     * @throws AskException
      * @return array
      */
     public function run()

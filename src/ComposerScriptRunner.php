@@ -4,6 +4,8 @@ namespace Dbtlr\PHPEnvBuilder;
 
 use Composer\Script\Event;
 use Composer\Factory;
+use Dbtlr\PHPEnvBuilder\Exception\AskException;
+use Dbtlr\PHPEnvBuilder\Exception\ConfigurationException;
 use Dbtlr\PHPEnvBuilder\IOHandler\ComposerIOHandler;
 
 class ComposerScriptRunner
@@ -23,7 +25,7 @@ class ComposerScriptRunner
     /**
      * ComposerScriptRunner constructor.
      *
-     * @throws \InvalidArgumentException
+     * @throws ConfigurationException
      * @param Event $event
      * @param Builder|null $builder
      */
@@ -145,7 +147,7 @@ class ComposerScriptRunner
     }
 
     /**
-     * @throws \InvalidArgumentException
+     * @throws ConfigurationException
      */
     protected function createBuilder()
     {
@@ -173,7 +175,8 @@ class ComposerScriptRunner
     /**
      * Build the config based on a composer's package.json file.
      *
-     * @throws \InvalidArgumentException
+     * @throws ConfigurationException
+     * @throws AskException
      * @param Event $event
      * @param Builder $builder
      */
@@ -185,6 +188,8 @@ class ComposerScriptRunner
 
     /**
      * Run the builder
+     *
+     * @throws AskException
      */
     public function run()
     {
