@@ -50,7 +50,6 @@ Example:
 
 ```json
 {
-    // In package.json
     "scripts": {
         "setup": "Dbtlr\\PHPEnvBuilder\\ComposerScriptRunner::build",
         "post-install-cmd": "@setup",
