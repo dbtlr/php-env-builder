@@ -173,4 +173,36 @@ class TestComposerScriptRunner extends TestBase
         $runner = $this->getRunner($extra, true);
         $this->assertSame($this->root->url() . DIRECTORY_SEPARATOR . '.env', $runner->getEnvFile());
     }
+
+    /** @test */
+    public function will_ask_questions_and_write()
+    {
+        $extra = [
+            'php-env-builder' => [
+                'loadEnv' => false,
+                'clobber' => false,
+                'verbose' => false,
+                'envFile' => '.env',
+                'questions' => [
+                    [
+                        'name' => 'name',
+                        'prompt' => 'What is your name?',
+                    ],
+                    [
+                        'name' => 'age',
+                        'prompt' => 'How old are you?',
+                    ]
+                ]
+            ]
+        ];
+
+        $this->builder->expects()->ask('name', 'What is your name?', '', false)->once();
+        $this->builder->expects()->ask('age', 'How old are you?', '', false)->once();
+        $this->builder->expects()->run()->once();
+        $this->builder->expects()->write()->once();
+
+        $runner = $this->getRunner($extra, true);
+        $runner->run();
+
+    }
 }
