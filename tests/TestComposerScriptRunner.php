@@ -40,17 +40,15 @@ class TestComposerScriptRunner extends TestBase
         $this->package = \Mockery::mock(RootPackageInterface::class);
         $this->io = \Mockery::mock(IOInterface::class);
         $this->builder = \Mockery::mock(Builder::class);
+
+        $this->event->allows()->getComposer()->andReturns($this->composer);
+        $this->composer->allows()->getPackage()->andReturns($this->package);
+        $this->event->allows()->getIO()->andReturns($this->io);
     }
 
-    protected function getRunner($extra, $withIO = false)
+    protected function getRunner($extra)
     {
-        $this->event->expects()->getComposer()->andReturns($this->composer);
-        $this->composer->expects()->getPackage()->andReturns($this->package);
-        $this->package->expects()->getExtra()->andReturns($extra);
-
-        if ($withIO) {
-            $this->event->expects()->getIO()->andReturns($this->io);
-        }
+        $this->package->allows()->getExtra()->andReturns($extra);
 
         $runner = new ComposerScriptRunner($this->event);
         $runner->setBasePath($this->root->url());
@@ -106,7 +104,7 @@ class TestComposerScriptRunner extends TestBase
                 ]
             ]
         ];
-        $runner = $this->getRunner($extra, true);
+        $runner = $this->getRunner($extra);
         $runner->run();
     }
 
@@ -124,7 +122,7 @@ class TestComposerScriptRunner extends TestBase
                 ]
             ]
         ];
-        $runner = $this->getRunner($extra, true);
+        $runner = $this->getRunner($extra);
         $runner->run();
     }
 
@@ -145,7 +143,7 @@ class TestComposerScriptRunner extends TestBase
                 ]
             ]
         ];
-        $runner = $this->getRunner($extra, true);
+        $runner = $this->getRunner($extra);
 
         foreach ($extra['php-env-builder'] as $name => $value) {
             $this->assertSame($value, $runner->get($name), 'Key -> ' . $name);
@@ -170,7 +168,7 @@ class TestComposerScriptRunner extends TestBase
             ]
         ];
 
-        $runner = $this->getRunner($extra, true);
+        $runner = $this->getRunner($extra);
         $this->assertSame($this->root->url() . DIRECTORY_SEPARATOR . '.env', $runner->getEnvFile());
     }
 
@@ -201,8 +199,117 @@ class TestComposerScriptRunner extends TestBase
         $this->builder->expects()->run()->once();
         $this->builder->expects()->write()->once();
 
-        $runner = $this->getRunner($extra, true);
+        $runner = $this->getRunner($extra);
         $runner->run();
 
+    }
+
+    /** @test */
+    public function will_run_when_file_exists_and_clobbering_time()
+    {
+        $extra = [
+            'php-env-builder' => [
+                'loadEnv' => false,
+                'clobber' => true,
+                'verbose' => false,
+                'envFile' => '.env',
+                'questions' => [
+                    [
+                        'name' => 'name',
+                        'prompt' => 'What is your name?',
+                    ],
+                    [
+                        'name' => 'age',
+                        'prompt' => 'How old are you?',
+                    ]
+                ]
+            ]
+        ];
+
+        // Make sure the .env file exists.
+        vfsStream::newFile('.env')->at($this->root)->withContent('hi');
+
+        // We don't write out anything this time.
+        $this->io->expects()->write()->never();
+
+        // All of this happens.
+        $this->builder->expects()->ask('name', 'What is your name?', '', false)->once();
+        $this->builder->expects()->ask('age', 'How old are you?', '', false)->once();
+        $this->builder->expects()->run()->once();
+        $this->builder->expects()->write()->once();
+
+        $runner = $this->getRunner($extra);
+        $runner->run();
+    }
+
+    /** @test */
+    public function will_not_run_when_file_exists_and_not_clobbering_time()
+    {
+        $extra = [
+            'php-env-builder' => [
+                'loadEnv' => false,
+                'clobber' => false,
+                'verbose' => false,
+                'envFile' => '.env',
+                'questions' => [
+                    [
+                        'name' => 'name',
+                        'prompt' => 'What is your name?',
+                    ],
+                    [
+                        'name' => 'age',
+                        'prompt' => 'How old are you?',
+                    ]
+                ]
+            ]
+        ];
+
+        // Make sure the .env file exists.
+        vfsStream::newFile('.env')->at($this->root)->withContent('hi');
+
+        // We should have written out a message saying the file exists.
+        $this->io->expects('write')->once();
+
+        // None of this happens this time.
+        $this->builder->expects()->ask('name', 'What is your name?', '', false)->never();
+        $this->builder->expects()->ask('age', 'How old are you?', '', false)->never();
+        $this->builder->expects()->run()->never();
+        $this->builder->expects()->write()->never();
+
+        $runner = $this->getRunner($extra);
+        $runner->run();
+    }
+
+    /** @test */
+    public function static_build_should_run()
+    {
+        $extra = [
+            'php-env-builder' => [
+                'loadEnv' => false,
+                'clobber' => false,
+                'verbose' => false,
+                'envFile' => '.env',
+                'questions' => [
+                    [
+                        'name' => 'name',
+                        'prompt' => 'What is your name?',
+                    ],
+                    [
+                        'name' => 'age',
+                        'prompt' => 'How old are you?',
+                    ]
+                ]
+            ]
+        ];
+
+        $this->package->allows()->getExtra()->andReturns($extra);
+
+        // All of this happens.
+        $this->builder->expects()->ask('name', 'What is your name?', '', false)->once();
+        $this->builder->expects()->ask('age', 'How old are you?', '', false)->once();
+        $this->builder->expects()->run()->once();
+        $this->builder->expects()->write()->once();
+
+        ComposerScriptRunner::build($this->event, $this->builder);
     }
 }

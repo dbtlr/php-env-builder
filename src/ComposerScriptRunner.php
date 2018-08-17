@@ -25,13 +25,18 @@ class ComposerScriptRunner
      *
      * @throws \InvalidArgumentException
      * @param Event $event
+     * @param Builder|null $builder
      */
-    public function __construct(Event $event)
+    public function __construct(Event $event, Builder $builder = null)
     {
         $this->event = $event;
+        $this->builder = $builder;
 
         $this->populateConfig();
-        $this->createBuilder();
+
+        if (!$this->builder) {
+            $this->createBuilder();
+        }
     }
 
     /**
@@ -152,10 +157,11 @@ class ComposerScriptRunner
      *
      * @throws \InvalidArgumentException
      * @param Event $event
+     * @param Builder $builder
      */
-    public static function build(Event $event)
+    public static function build(Event $event, Builder $builder = null)
     {
-        $runner = new ComposerScriptRunner($event);
+        $runner = new ComposerScriptRunner($event, $builder);
         $runner->run();
     }
 
