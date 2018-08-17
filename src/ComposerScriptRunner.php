@@ -57,7 +57,7 @@ class ComposerScriptRunner
     }
 
     /**
-     * @return |string
+     * @return string
      */
     public function getBasePath()
     {
