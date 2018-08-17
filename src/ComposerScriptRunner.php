@@ -105,6 +105,25 @@ class ComposerScriptRunner
     {
         $extras = $this->event->getComposer()->getPackage()->getExtra();
 
+        $this->verifyExtras($extras);
+
+        $config = $extras['php-env-builder'];
+
+        $this->set('envFile', isset($config['envFile']) ? $config['envFile'] : '.env');
+        $this->set('clobber', isset($config['clobber']) ? $config['clobber'] : false);
+        $this->set('verbose', isset($config['verbose']) ? $config['verbose'] : false);
+        $this->set('loadEnv', isset($config['loadEnv']) ? $config['loadEnv'] : false);
+        $this->set('questions', $config['questions']);
+    }
+
+    /**
+     * Verify that the extras a formatted properly and throw an exception if not.
+     *
+     * @throws \InvalidArgumentException
+     * @param array $extras
+     */
+    protected function verifyExtras(array $extras)
+    {
         if (!isset($extras['php-env-builder'])) {
             throw new \InvalidArgumentException(
                 'The parameter handler needs to be configured through the ' .
@@ -112,25 +131,17 @@ class ComposerScriptRunner
             );
         }
 
-        $config = $extras['php-env-builder'];
-        if (!is_array($config)) {
+        if (!is_array($extras['php-env-builder'])) {
             throw new \InvalidArgumentException(
                 'The extra.php-env-builder setting must be an array or a configuration object.'
             );
         }
 
-        $this->set('envFile', isset($config['envFile']) ? $config['envFile'] : '.env');
-        $this->set('clobber', isset($config['clobber']) ? $config['clobber'] : false);
-        $this->set('verbose', isset($config['verbose']) ? $config['verbose'] : false);
-        $this->set('loadEnv', isset($config['loadEnv']) ? $config['loadEnv'] : false);
-
-        if (!isset($config['questions']) || !is_array($config['questions'])) {
+        if (!isset($extras['php-env-builder']['questions']) || !is_array($extras['php-env-builder']['questions'])) {
             throw new \InvalidArgumentException(
                 'The extra.php-env-builder.questions setting must be an array of questions.'
             );
         }
-
-        $this->set('questions', $config['questions']);
     }
 
     /**
@@ -184,17 +195,7 @@ class ComposerScriptRunner
         }
 
         foreach ($this->get('questions') as $question) {
-            if (!isset($question['name'])) {
-                throw new \InvalidArgumentException(
-                    'The extra.php-env-builder.questions require all questions have a `name` property.'
-                );
-            }
-
-            if (!isset($question['prompt'])) {
-                throw new \InvalidArgumentException(
-                    'The extra.php-env-builder.questions require all questions have a `prompt` property.'
-                );
-            }
+            $this->verifyQuestion($question);
 
             $name = $question['name'];
             $prompt = $question['prompt'];
@@ -206,5 +207,26 @@ class ComposerScriptRunner
 
         $this->builder->run();
         $this->builder->write();
+    }
+
+    /**
+     * Verify that the question has the minimum fields.
+     *
+     * @throws \InvalidArgumentException
+     * @param array $question
+     */
+    protected function verifyQuestion(array $question)
+    {
+        if (!isset($question['name'])) {
+            throw new \InvalidArgumentException(
+                'The extra.php-env-builder.questions require all questions have a `name` property.'
+            );
+        }
+
+        if (!isset($question['prompt'])) {
+            throw new \InvalidArgumentException(
+                'The extra.php-env-builder.questions require all questions have a `prompt` property.'
+            );
+        }
     }
 }
