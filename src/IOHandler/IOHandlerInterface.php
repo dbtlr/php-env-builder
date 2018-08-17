@@ -1,7 +1,6 @@
 <?php
 namespace Dbtlr\PHPEnvBuilder\IOHandler;
 
-
 interface IOHandlerInterface
 {
     /**

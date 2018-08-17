@@ -35,7 +35,12 @@ class EnvWriter
 
         if (!file_exists($path)) {
             if (!is_writable($this->directory)) {
-                throw new WritableException(sprintf('The env file is not present and the directory `%s` is not writeable!', $this->directory));
+                throw new WritableException(
+                    sprintf(
+                        'The env file is not present and the directory `%s` is not writeable!',
+                        $this->directory
+                    )
+                );
             }
 
             touch($path);

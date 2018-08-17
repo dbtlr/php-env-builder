@@ -106,12 +106,17 @@ class ComposerScriptRunner
         $extras = $this->event->getComposer()->getPackage()->getExtra();
 
         if (!isset($extras['php-env-builder'])) {
-            throw new \InvalidArgumentException('The parameter handler needs to be configured through the extra.php-env-builder setting.');
+            throw new \InvalidArgumentException(
+                'The parameter handler needs to be configured through the ' .
+                'extra.php-env-builder setting.'
+            );
         }
 
         $config = $extras['php-env-builder'];
         if (!is_array($config)) {
-            throw new \InvalidArgumentException('The extra.php-env-builder setting must be an array or a configuration object.');
+            throw new \InvalidArgumentException(
+                'The extra.php-env-builder setting must be an array or a configuration object.'
+            );
         }
 
         $this->set('envFile', isset($config['envFile']) ? $config['envFile'] : '.env');
@@ -120,7 +125,9 @@ class ComposerScriptRunner
         $this->set('loadEnv', isset($config['loadEnv']) ? $config['loadEnv'] : false);
 
         if (!isset($config['questions']) || !is_array($config['questions'])) {
-            throw new \InvalidArgumentException('The extra.php-env-builder.questions setting must be an array of questions.');
+            throw new \InvalidArgumentException(
+                'The extra.php-env-builder.questions setting must be an array of questions.'
+            );
         }
 
         $this->set('questions', $config['questions']);
@@ -178,11 +185,15 @@ class ComposerScriptRunner
 
         foreach ($this->get('questions') as $question) {
             if (!isset($question['name'])) {
-                throw new \InvalidArgumentException('The extra.php-env-builder.questions require all questions have a `name` property.');
+                throw new \InvalidArgumentException(
+                    'The extra.php-env-builder.questions require all questions have a `name` property.'
+                );
             }
 
             if (!isset($question['prompt'])) {
-                throw new \InvalidArgumentException('The extra.php-env-builder.questions require all questions have a `prompt` property.');
+                throw new \InvalidArgumentException(
+                    'The extra.php-env-builder.questions require all questions have a `prompt` property.'
+                );
             }
 
             $name = $question['name'];

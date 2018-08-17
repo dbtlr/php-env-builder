@@ -33,6 +33,7 @@
         }
     },
     "scripts": {
+        "lint": "phpcs --standard=PSR2 src",
         "test": "phpunit"
     }
 }

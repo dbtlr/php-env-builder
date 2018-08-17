@@ -167,7 +167,6 @@ class Builder
             $this->envWriter->save($this->answers);
             $this->io->out(sprintf('Answers saved to %s', $this->envFile));
             return true;
-
         } catch (WritableException $e) {
             $this->io->out($e->getMessage());
             return false;
