@@ -41,3 +41,52 @@ $builder->ask(
 $builder->run(); // Run the builder and return the answers.
 $builder->write(); // Write the answers to the file.
 ```
+
+## Usage w/ Composer
+
+In order to use this as a part of a composer script, you can alternatively run this without a PHP script instead.
+
+Example:
+
+```json
+{
+    // In package.json
+    "scripts": {
+        "setup": "Dbtlr\\PHPEnvBuilder\\ComposerScriptRunner::build",
+        "post-install-cmd": "@setup",
+        "post-update-cmd": "@setup"
+    },
+    "extra": {
+        "php-env-builder": {
+            "envFile": ".env",
+            "questions": [
+                {
+                    "name": "MYSQL_HOST",
+                    "prompt": "What is the hostname for the MySQL server?",
+                    "default": "127.0.0.1",
+                    "required": true
+                },
+                {
+                    "name": "MYSQL_PORT",
+                    "prompt": "The port for the MySQL server?",
+                    "default": "3306",
+                    "required": true
+                },
+                {
+                    "name": "MYSQL_USER",
+                    "prompt": "What is the MySQL user?",
+                    "default": "",
+                    "required": true
+                },
+                {
+                    "name": "MYSQL_PASSWORD",
+                    "prompt": "What is the MySQL password?",
+                    "default": "",
+                    "required": true
+                }
+            ]
+        }
+    }
+}
+
+```
