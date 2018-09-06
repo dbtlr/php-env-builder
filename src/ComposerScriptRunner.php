@@ -60,7 +60,7 @@ class ComposerScriptRunner
      */
     public function get(string $key)
     {
-        return isset($this->config[$key]) ? $this->config[$key] : null;
+        return $this->config[$key] ?? null;
     }
 
     /**
@@ -111,10 +111,10 @@ class ComposerScriptRunner
 
         $config = $extras['php-env-builder'];
 
-        $this->set('envFile', isset($config['envFile']) ? $config['envFile'] : '.env');
-        $this->set('clobber', isset($config['clobber']) ? $config['clobber'] : false);
-        $this->set('verbose', isset($config['verbose']) ? $config['verbose'] : false);
-        $this->set('loadEnv', isset($config['loadEnv']) ? $config['loadEnv'] : false);
+        $this->set('envFile', $config['envFile'] ?? '.env');
+        $this->set('clobber', $config['clobber'] ?? false);
+        $this->set('verbose', $config['verbose'] ?? false);
+        $this->set('loadEnv', $config['loadEnv'] ?? false);
         $this->set('questions', $config['questions']);
     }
 
@@ -215,8 +215,8 @@ class ComposerScriptRunner
 
             $name = $question['name'];
             $prompt = $question['prompt'];
-            $default = isset($question['default']) ? $question['default'] : '';
-            $required = isset($question['required']) ?  (bool) $question['required'] : false;
+            $default = $question['default'] ?? '';
+            $required = (bool) ($question['required'] ?? false);
 
             $this->builder->ask($name, $prompt, $default, $required);
         }

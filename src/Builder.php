@@ -149,7 +149,7 @@ class Builder
 
         foreach ($this->questions as $name => $question) {
             // If We got an answer out of the loaded env, then let's use it.
-            $default = isset($current[$name]) ? $current[$name] : $question['default'];
+            $default = $current[$name] ?? $question['default'];
 
             // Ask the question.
             $this->answers[$name] = $this->io->ask($name, $question['prompt'], $default, $question['required']);
